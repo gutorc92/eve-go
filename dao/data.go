@@ -77,7 +77,6 @@ func (dt *DataMongo) FindFarm() ([]collections.Farm, error) {
 	if err = cursor.All(ctx, &farms); err != nil {
 		return nil, err
 	}
-	fmt.Println(farms)
 	return farms, nil
 }
 
