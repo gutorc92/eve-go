@@ -31,17 +31,20 @@ var (
 type Server struct {
 	*config.WebConfig
 	FarmApis      	FarmAPI
+	Apis []API
 }
 
 // InitFromWebConfig builds a Server instance
 func (s *Server) InitFromWebConfig(wc *config.WebConfig) *Server {
 	s.WebConfig = wc
 	var dt *dao.DataMongo
-	dt, err := dao.NewDataMongo("mongodb://localhost:27017")
+	dt, err := dao.NewDataMongo(wc.Uri, wc.Database)
 	if err != nil {
 		panic(err)
 	}
 	s.FarmApis = new(DefaultFarmAPI).InitConfig(wc, dt)
+	batchApi := new(DefaultBatchAPI).InitConfig(wc, dt)
+	s.Apis = append(s.Apis, batchApi)
 	return s
 }
 
@@ -59,6 +62,10 @@ func (s *Server) Serve() error {
 	v1Router := router.PathPrefix("/v1").Subrouter()
 	v1Router.Handle("/farm", s.FarmApis.GETHandler()).Methods("GET")
 	v1Router.Handle("/farm", s.FarmApis.POSTHandler()).Methods("POST")
+	for _,api := range s.Apis {
+		v1Router.Handle(api.GetUrl(), api.GETHandler()).Methods("GET")
+		v1Router.Handle(api.GetUrl(), api.POSTHandler()).Methods("POST")
+	}
 	return s.ListenAndServe(router)
 
 }
