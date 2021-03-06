@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-farm
+  labels:
+    app: api-farm
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-farm
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: api-farm
+        version: v1
+    spec:
+      containers:
+      - name: api-farm
+        image: gutorc92/api-farm
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+      imagePullSecrets:
+      - name: gitlab
+---
