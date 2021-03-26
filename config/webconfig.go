@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	uri						= "uri"
 	database      = "database"
 	logLevel      = "log-level"
 )
@@ -15,15 +16,23 @@ const (
 type WebConfig struct {
 	Metrics			 *metrics.Metrics
 	Database	string
+	Uri	string
 }
 
 func AddFlags(flags *pflag.FlagSet) {
-	flags.StringP(database, "d", "", "Mongo db uri")
+	flags.StringP(uri, "u", "", "Mongo db uri")
+	flags.StringP(database, "d", "", "Mongo database")
 	flags.StringP(logLevel, "l", "info", "[optional] The loggin level for this service")
 }
 // Init initializes the web config with properties retrieved from Viper.
 func (c *WebConfig) Init(v *viper.Viper) *WebConfig {
 	c.Metrics = metrics.New()
+	if v.GetString(database) != "" {
+		c.Database = v.GetString(database)
+	}
+	if v.GetString(uri) != "" {
+		c.Uri = v.GetString(uri)
+	}
 	return c
 }
 
