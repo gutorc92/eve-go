@@ -1,17 +1,18 @@
 package handlers
 
 import (
-	"net/http"
 	"encoding/json"
 	"fmt"
-	"github.com/gutorc92/api-farm/dao"
-	"github.com/gutorc92/api-farm/config"
-	"github.com/gutorc92/api-farm/metrics"
+	"net/http"
+
 	"github.com/gutorc92/api-farm/collections"
+	"github.com/gutorc92/api-farm/config"
+	"github.com/gutorc92/api-farm/dao"
+	"github.com/gutorc92/api-farm/metrics"
 )
 
 const (
-	BATCH  = "batch"
+	BATCH = "batch"
 )
 
 type DefaultBatchAPI struct {
@@ -33,27 +34,17 @@ func (dapi *DefaultBatchAPI) GetUrl() string {
 	return fmt.Sprintf("/%s", dapi.collection)
 }
 
-
 func (dapi *DefaultBatchAPI) GETHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Get the JSON body and decode into credentials
-		data, err := dapi.dt.FindAll(dapi.collection)
+		var data []collections.Batch
+		err := dapi.dt.FindAll(dapi.collection, &data)
 		if err != nil {
 			fmt.Println("Error to error", err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		meta := newMeta(data)
-		result := ResultPage{Items: data, Meta: meta}
-		jEncoder := json.NewEncoder(w)
-		jEncoder.SetEscapeHTML(false)
-		err = jEncoder.Encode(result)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
+		WriteJSONResponse(data, 200, w)
 	})
 }
 

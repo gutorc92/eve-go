@@ -4,21 +4,22 @@ import (
 	"context"
 	"fmt"
 	"time"
+
+	"github.com/gutorc92/api-farm/collections"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"github.com/gutorc92/api-farm/collections"
 )
 
 type DataMongo struct {
-	Uri string
-	Client *mongo.Client
+	Uri      string
+	Client   *mongo.Client
 	Database string
 }
 
-func NewDataMongo (uri string, database string) (*DataMongo, error) {
+func NewDataMongo(uri string, database string) (*DataMongo, error) {
 	var dt DataMongo
 	var err error
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -86,18 +87,16 @@ func (dt *DataMongo) FindFarm() ([]collections.Farm, error) {
 	return farms, nil
 }
 
-func (dt *DataMongo) FindAll(collectionName string) ([]interface{}, error) {
-	var data []interface{}
+func (dt *DataMongo) FindAll(collectionName string, data interface{}) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	collection := dt.Client.Database(dt.Database).Collection(collectionName)
 	cursor, err := collection.Find(ctx, bson.D{})
 	if err != nil {
-		return nil, err
+		return err
 	}
-	if err = cursor.All(ctx, &data); err != nil {
-		return nil, err
+	if err = cursor.All(ctx, data); err != nil {
+		return err
 	}
-	return data, nil
+	return nil
 }
-
