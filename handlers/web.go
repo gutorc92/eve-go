@@ -31,8 +31,7 @@ var (
 // Server holds the information needed to run Whisper
 type Server struct {
 	*config.WebConfig
-	FarmApis FarmAPI
-	Apis     []API
+	Apis []API
 }
 
 // InitFromWebConfig builds a Server instance
@@ -43,11 +42,12 @@ func (s *Server) InitFromWebConfig(wc *config.WebConfig) *Server {
 	if err != nil {
 		panic(err)
 	}
-	s.FarmApis = new(DefaultFarmAPI).InitConfig(wc, dt)
+	farmApis := new(DefaultFarmAPI).InitConfig(wc, dt)
 	batchApi := new(DefaultBatchAPI).InitConfig(wc, dt)
 	cowApi := new(DefaultCowAPI).InitConfig(wc, dt)
 	s.Apis = append(s.Apis, batchApi)
 	s.Apis = append(s.Apis, cowApi)
+	s.Apis = append(s.Apis, farmApis)
 	return s
 }
 
@@ -63,8 +63,6 @@ func (s *Server) Serve() error {
 	router.Handle("/healthz", healthz())
 	router.Handle("/metrics", promhttp.Handler()).Methods(http.MethodGet)
 	v1Router := router.PathPrefix("/v1").Subrouter()
-	v1Router.Handle("/farm", s.FarmApis.GETHandler()).Methods("GET")
-	v1Router.Handle("/farm", s.FarmApis.POSTHandler()).Methods("POST")
 	for _, api := range s.Apis {
 		v1Router.Handle(api.GetUrl(), api.GETHandler()).Methods("GET")
 		v1Router.Handle(api.GetUrl(), api.POSTHandler()).Methods("POST")

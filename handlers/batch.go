@@ -38,7 +38,8 @@ func (dapi *DefaultBatchAPI) GETHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Get the JSON body and decode into credentials
 		var data []collections.Batch
-		err := dapi.dt.FindAll(dapi.collection, &data)
+		req := NewRequestParameters(r.URL.Query())
+		err := dapi.dt.FindAll(dapi.collection, &data, req.RequestParameters2MongOptions())
 		if err != nil {
 			fmt.Println("Error to error", err)
 			w.WriteHeader(http.StatusBadRequest)
