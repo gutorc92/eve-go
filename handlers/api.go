@@ -9,6 +9,7 @@ import (
 
 	"github.com/gutorc92/api-farm/config"
 	"github.com/gutorc92/api-farm/dao"
+	"github.com/prometheus/common/log"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -46,9 +47,11 @@ func NewRequestParameters(values url.Values) RequestParameters {
 	if max_results != "" {
 		i, err := strconv.Atoi(max_results)
 		if err != nil {
-			return RequestParameters{}
+			log.Error("Cannot convert max_values to int")
+			req.MaxResults = 50
+		} else {
+			req.MaxResults = i
 		}
-		req.MaxResults = i
 	}
 	return req
 }
