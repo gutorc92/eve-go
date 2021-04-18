@@ -10,9 +10,10 @@ import (
 	"os/signal"
 	"sync/atomic"
 	"time"
+
 	"github.com/gorilla/mux"
-	"github.com/gutorc92/api-farm/dao"
 	"github.com/gutorc92/api-farm/config"
+	"github.com/gutorc92/api-farm/dao"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
@@ -30,7 +31,6 @@ var (
 // Server holds the information needed to run Whisper
 type Server struct {
 	*config.WebConfig
-	FarmApis      	FarmAPI
 	Apis []API
 }
 
@@ -42,27 +42,28 @@ func (s *Server) InitFromWebConfig(wc *config.WebConfig) *Server {
 	if err != nil {
 		panic(err)
 	}
-	s.FarmApis = new(DefaultFarmAPI).InitConfig(wc, dt)
+	farmApis := new(DefaultFarmAPI).InitConfig(wc, dt)
 	batchApi := new(DefaultBatchAPI).InitConfig(wc, dt)
+	cowApi := new(DefaultCowAPI).InitConfig(wc, dt)
 	s.Apis = append(s.Apis, batchApi)
+	s.Apis = append(s.Apis, cowApi)
+	s.Apis = append(s.Apis, farmApis)
 	return s
 }
 
 func (s *Server) Serve() error {
-	
+
 	flag.StringVar(&listenAddr, "listen-addr", ":5000", "server listen address")
 	flag.Parse()
 
 	logger := log.New(os.Stdout, "http: ", log.LstdFlags)
 	logger.Println("Server is starting...")
- 
+
 	router := mux.NewRouter().StrictSlash(true)
 	router.Handle("/healthz", healthz())
 	router.Handle("/metrics", promhttp.Handler()).Methods(http.MethodGet)
 	v1Router := router.PathPrefix("/v1").Subrouter()
-	v1Router.Handle("/farm", s.FarmApis.GETHandler()).Methods("GET")
-	v1Router.Handle("/farm", s.FarmApis.POSTHandler()).Methods("POST")
-	for _,api := range s.Apis {
+	for _, api := range s.Apis {
 		v1Router.Handle(api.GetUrl(), api.GETHandler()).Methods("GET")
 		v1Router.Handle(api.GetUrl(), api.POSTHandler()).Methods("POST")
 	}

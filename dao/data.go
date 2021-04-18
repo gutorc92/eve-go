@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gutorc92/api-farm/collections"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -38,23 +37,6 @@ func NewDataMongo(uri string, database string) (*DataMongo, error) {
 	return &dt, nil
 }
 
-func (dt *DataMongo) InsertFarm(farm collections.Farm) (primitive.ObjectID, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	collection := dt.Client.Database(dt.Database).Collection("farm")
-	res, err := collection.InsertOne(ctx, farm)
-	if err != nil {
-		fmt.Println("Error to error")
-		return primitive.NewObjectID(), err
-	}
-	id := res.InsertedID.(primitive.ObjectID)
-	// if err != nil {
-	// 	return primitive.NewObjectID(), nil
-	// }
-	fmt.Println("Id insert: ", id)
-	return id, nil
-}
-
 func (dt *DataMongo) Insert(collectionName string, save interface{}) (primitive.ObjectID, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -72,26 +54,11 @@ func (dt *DataMongo) Insert(collectionName string, save interface{}) (primitive.
 	return id, nil
 }
 
-func (dt *DataMongo) FindFarm() ([]collections.Farm, error) {
-	var farms []collections.Farm
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	collection := dt.Client.Database(dt.Database).Collection("farm")
-	cursor, err := collection.Find(ctx, bson.D{})
-	if err != nil {
-		return nil, err
-	}
-	if err = cursor.All(ctx, &farms); err != nil {
-		return nil, err
-	}
-	return farms, nil
-}
-
-func (dt *DataMongo) FindAll(collectionName string, data interface{}) error {
+func (dt *DataMongo) FindAll(collectionName string, data interface{}, findOptions *options.FindOptions) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	collection := dt.Client.Database(dt.Database).Collection(collectionName)
-	cursor, err := collection.Find(ctx, bson.D{})
+	cursor, err := collection.Find(ctx, bson.D{}, findOptions)
 	if err != nil {
 		return err
 	}

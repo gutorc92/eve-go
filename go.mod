@@ -7,6 +7,7 @@ require (
 	github.com/go-redis/redis/v8 v8.7.0
 	github.com/gorilla/mux v1.8.0
 	github.com/prometheus/client_golang v0.9.3
+	github.com/prometheus/common v0.4.0
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/pflag v1.0.3
