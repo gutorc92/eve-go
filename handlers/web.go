@@ -82,7 +82,10 @@ func (s *Server) Serve() error {
 	for _, api := range s.Apis {
 		for _, method := range api.ResourceMethods {
 			if method == "GET" {
+				v1Router.Path(api.GetUrlItem()).Handler(GETHandler(s.dt, api.GetCollectionName(), api.Schema)).Methods("GET")
 				v1Router.Handle(api.GetUrl(), GETHandler(s.dt, api.GetCollectionName(), api.Schema)).Methods("GET")
+			} else if method == "POST" {
+				v1Router.Handle(api.GetUrl(), POSTHandler(s.dt, api.GetCollectionName(), api.Schema)).Methods("POST")
 			}
 		}
 		// v1Router.Handle(api.GetUrl(), api.GETHandler()).Methods("GET")

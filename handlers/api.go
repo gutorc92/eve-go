@@ -69,7 +69,7 @@ func (req *RequestParameters) RequestParameters2MongOptions() *options.FindOptio
 
 func GETHandler(dt *dao.DataMongo, collectionName string, schema collections.Schema) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		typ, err := schema.CreateStruct()
+		typ, err := schema.CreateStruct(true)
 		if err != nil {
 			fmt.Println("Error to create struct", err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -84,6 +84,32 @@ func GETHandler(dt *dao.DataMongo, collectionName string, schema collections.Sch
 		err = dt.FindAll(collectionName, x.Interface(), req.RequestParameters2MongOptions())
 		if err != nil {
 			fmt.Println("Error to find all", err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		fmt.Println("x", x)
+		WriteJSONResponse(x.Interface(), 200, w)
+	})
+}
+
+func POSTHandler(dt *dao.DataMongo, collectionName string, schema collections.Schema) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		typ, err := schema.CreateStruct(true)
+		if err != nil {
+			fmt.Println("Error to create struct", err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		x := reflect.New(typ)
+		err = json.NewDecoder(r.Body).Decode(x.Interface())
+		if err != nil {
+			// If the structure of the body is wrong, return an HTTP error
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		_, err = dt.Insert(collectionName, x.Interface())
+		if err != nil {
+			fmt.Println("Error to error")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}

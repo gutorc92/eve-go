@@ -36,7 +36,7 @@ func createTag(name string) reflect.StructTag {
 	return reflect.StructTag(fmt.Sprintf(`bson:"%s,omitempty" json:"%s"`, name, name))
 }
 
-func (s *Schema) CreateStruct() (reflect.Type, error) {
+func (s *Schema) CreateStruct(list bool) (reflect.Type, error) {
 	fields := make([]reflect.StructField, 0, len(s.Fields))
 	for key, field := range s.Fields {
 		fields = append(fields, reflect.StructField{
@@ -45,11 +45,13 @@ func (s *Schema) CreateStruct() (reflect.Type, error) {
 			Tag:  createTag(key),
 		})
 	}
-	fields = append(fields, reflect.StructField{
-		Name: "ID",
-		Type: reflect.TypeOf(primitive.ObjectID{}),
-		Tag:  `bson:"_id,omitempty" json:"_id"`,
-	})
+	if list == true {
+		fields = append(fields, reflect.StructField{
+			Name: "ID",
+			Type: reflect.TypeOf(primitive.ObjectID{}),
+			Tag:  `bson:"_id,omitempty" json:"_id"`,
+		})
+	}
 	typ := reflect.StructOf(fields)
 	return typ, nil
 }
@@ -90,6 +92,10 @@ type Domain struct {
 
 func (d *Domain) GetUrl() string {
 	return fmt.Sprintf("/%s", d.URL)
+}
+
+func (d *Domain) GetUrlItem() string {
+	return fmt.Sprintf("/%s/{id:[0-9]+}", d.URL)
 }
 
 func (d *Domain) GetCollectionName() string {
