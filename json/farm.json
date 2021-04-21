@@ -1,0 +1,14 @@
+{
+  "url": "farm",
+  "resource_methods": ["GET", "POST"],
+  "schema": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "social_name": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

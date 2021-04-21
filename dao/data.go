@@ -57,6 +57,7 @@ func (dt *DataMongo) Insert(collectionName string, save interface{}) (primitive.
 func (dt *DataMongo) FindAll(collectionName string, data interface{}, findOptions *options.FindOptions) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+	fmt.Println("Database", dt.Database)
 	collection := dt.Client.Database(dt.Database).Collection(collectionName)
 	cursor, err := collection.Find(ctx, bson.D{}, findOptions)
 	if err != nil {

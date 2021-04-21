@@ -7,23 +7,27 @@ import (
 )
 
 const (
-	uri						= "uri"
-	database      = "database"
-	logLevel      = "log-level"
+	uri      = "uri"
+	database = "database"
+	logLevel = "log-level"
+	files    = "files"
 )
 
 // WebConfig defines the parametric information of a data-controller server instance
 type WebConfig struct {
-	Metrics			 *metrics.Metrics
-	Database	string
-	Uri	string
+	Metrics  *metrics.Metrics
+	Database string
+	Uri      string
+	File     string
 }
 
 func AddFlags(flags *pflag.FlagSet) {
 	flags.StringP(uri, "u", "", "Mongo db uri")
 	flags.StringP(database, "d", "", "Mongo database")
 	flags.StringP(logLevel, "l", "info", "[optional] The loggin level for this service")
+	flags.StringP(files, "f", "", "The files to generate api service")
 }
+
 // Init initializes the web config with properties retrieved from Viper.
 func (c *WebConfig) Init(v *viper.Viper) *WebConfig {
 	c.Metrics = metrics.New()
@@ -35,7 +39,3 @@ func (c *WebConfig) Init(v *viper.Viper) *WebConfig {
 	}
 	return c
 }
-
-
-
-

@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strconv"
 
+	"github.com/gutorc92/api-farm/collections"
 	"github.com/gutorc92/api-farm/config"
 	"github.com/gutorc92/api-farm/dao"
 	"github.com/prometheus/common/log"
@@ -52,6 +54,8 @@ func NewRequestParameters(values url.Values) RequestParameters {
 		} else {
 			req.MaxResults = i
 		}
+	} else {
+		req.MaxResults = 50
 	}
 	return req
 }
@@ -63,25 +67,30 @@ func (req *RequestParameters) RequestParameters2MongOptions() *options.FindOptio
 	return &findOptions
 }
 
-// func GETHandler(wc *config.WebConfig, collectionName string, data interface{}) http.Handler {
-// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-// 		// Get the JSON body and decode into credentials
-// 		var dt *dao.DataMongo
-// 		dt, err := dao.NewDataMongo(wc.Uri, wc.Database)
-// 		if err != nil {
-// 			panic(err)
-// 		}
-// 		err = dt.FindAll(collectionName, &data)
-// 		if err != nil {
-// 			fmt.Println("Error to error", err)
-// 			w.WriteHeader(http.StatusBadRequest)
-// 			return
-// 		}
-// 		q := r.URL.Query()
-
-// 		WriteJSONResponse(data, 200, w)
-// 	})
-// }
+func GETHandler(dt *dao.DataMongo, collectionName string, schema collections.Schema) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		typ, err := schema.CreateStruct()
+		if err != nil {
+			fmt.Println("Error to create struct", err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		// v := reflect.New(typ).Elem()
+		req := NewRequestParameters(r.URL.Query())
+		fmt.Println("Collection name:", collectionName, req.MaxResults)
+		slice := reflect.MakeSlice(reflect.SliceOf(typ), 5, req.MaxResults)
+		x := reflect.New(slice.Type())
+		x.Elem().Set(slice)
+		err = dt.FindAll(collectionName, x.Interface(), req.RequestParameters2MongOptions())
+		if err != nil {
+			fmt.Println("Error to find all", err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		fmt.Println("x", x)
+		WriteJSONResponse(x.Interface(), 200, w)
+	})
+}
 
 func WriteJSONResponse(payload interface{}, status int, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")

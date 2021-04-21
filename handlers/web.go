@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -12,6 +14,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/gutorc92/api-farm/collections"
 	"github.com/gutorc92/api-farm/config"
 	"github.com/gutorc92/api-farm/dao"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -31,7 +34,9 @@ var (
 // Server holds the information needed to run Whisper
 type Server struct {
 	*config.WebConfig
-	Apis []API
+	// Apis []API
+	dt   *dao.DataMongo
+	Apis []collections.Domain
 }
 
 // InitFromWebConfig builds a Server instance
@@ -42,12 +47,23 @@ func (s *Server) InitFromWebConfig(wc *config.WebConfig) *Server {
 	if err != nil {
 		panic(err)
 	}
-	farmApis := new(DefaultFarmAPI).InitConfig(wc, dt)
-	batchApi := new(DefaultBatchAPI).InitConfig(wc, dt)
-	cowApi := new(DefaultCowAPI).InitConfig(wc, dt)
-	s.Apis = append(s.Apis, batchApi)
-	s.Apis = append(s.Apis, cowApi)
-	s.Apis = append(s.Apis, farmApis)
+	s.dt = dt
+	jsonFile, err := os.Open("json/farm.json")
+	// if we os.Open returns an error then handle it
+	if err != nil {
+		fmt.Println(err)
+	}
+	var domain collections.Domain
+	fmt.Println("Successfully Opened users.json")
+	// defer the closing of our jsonFile so that we can parse it later on
+	defer jsonFile.Close()
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+	err = json.Unmarshal(byteValue, &domain)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("Successfully Opened", domain)
+	s.Apis = append(s.Apis, domain)
 	return s
 }
 
@@ -64,8 +80,13 @@ func (s *Server) Serve() error {
 	router.Handle("/metrics", promhttp.Handler()).Methods(http.MethodGet)
 	v1Router := router.PathPrefix("/v1").Subrouter()
 	for _, api := range s.Apis {
-		v1Router.Handle(api.GetUrl(), api.GETHandler()).Methods("GET")
-		v1Router.Handle(api.GetUrl(), api.POSTHandler()).Methods("POST")
+		for _, method := range api.ResourceMethods {
+			if method == "GET" {
+				v1Router.Handle(api.GetUrl(), GETHandler(s.dt, api.GetCollectionName(), api.Schema)).Methods("GET")
+			}
+		}
+		// v1Router.Handle(api.GetUrl(), api.GETHandler()).Methods("GET")
+		// v1Router.Handle(api.GetUrl(), api.POSTHandler()).Methods("POST")
 	}
 	return s.ListenAndServe(router)
 
