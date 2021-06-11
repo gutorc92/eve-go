@@ -12,6 +12,7 @@ import (
 	"github.com/gutorc92/api-farm/config"
 	"github.com/gutorc92/api-farm/dao"
 	"github.com/prometheus/common/log"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -41,10 +42,11 @@ func newMeta() *MetaPage {
 
 type RequestParameters struct {
 	MaxResults int
+	Where      string
 }
 
 func NewRequestParameters(values url.Values) RequestParameters {
-	req := RequestParameters{0}
+	req := RequestParameters{0, ""}
 	max_results := values.Get("max_results")
 	if max_results != "" {
 		i, err := strconv.Atoi(max_results)
@@ -56,6 +58,10 @@ func NewRequestParameters(values url.Values) RequestParameters {
 		}
 	} else {
 		req.MaxResults = 50
+	}
+	where := values.Get("where")
+	if where != "" {
+		req.Where = where
 	}
 	return req
 }
@@ -77,11 +83,12 @@ func GETHandler(dt *dao.DataMongo, collectionName string, schema collections.Sch
 		}
 		// v := reflect.New(typ).Elem()
 		req := NewRequestParameters(r.URL.Query())
+		fmt.Println("where", req.Where)
 		fmt.Println("Collection name:", collectionName, req.MaxResults)
 		slice := reflect.MakeSlice(reflect.SliceOf(typ), 5, req.MaxResults)
 		x := reflect.New(slice.Type())
 		x.Elem().Set(slice)
-		err = dt.FindAll(collectionName, x.Interface(), req.RequestParameters2MongOptions())
+		err = dt.FindAll(collectionName, bson.M{"name": "Sitio Abrace"}, x.Interface(), req.RequestParameters2MongOptions())
 		if err != nil {
 			fmt.Println("Error to find all", err)
 			w.WriteHeader(http.StatusBadRequest)

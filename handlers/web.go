@@ -48,22 +48,25 @@ func (s *Server) InitFromWebConfig(wc *config.WebConfig) *Server {
 		panic(err)
 	}
 	s.dt = dt
-	jsonFile, err := os.Open("json/farm.json")
-	// if we os.Open returns an error then handle it
-	if err != nil {
-		fmt.Println(err)
+	for _, fileName := range wc.JsonFiles {
+		fmt.Println("File to Read", fileName)
+		jsonFile, err := os.Open(fileName)
+		// if we os.Open returns an error then handle it
+		if err != nil {
+			fmt.Println(err)
+		}
+		var domain collections.Domain
+		fmt.Println("Successfully Opened: ", fileName)
+		// defer the closing of our jsonFile so that we can parse it later on
+		defer jsonFile.Close()
+		byteValue, _ := ioutil.ReadAll(jsonFile)
+		err = json.Unmarshal(byteValue, &domain)
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println("Successfully Opened", domain)
+		s.Apis = append(s.Apis, domain)
 	}
-	var domain collections.Domain
-	fmt.Println("Successfully Opened users.json")
-	// defer the closing of our jsonFile so that we can parse it later on
-	defer jsonFile.Close()
-	byteValue, _ := ioutil.ReadAll(jsonFile)
-	err = json.Unmarshal(byteValue, &domain)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("Successfully Opened", domain)
-	s.Apis = append(s.Apis, domain)
 	return s
 }
 

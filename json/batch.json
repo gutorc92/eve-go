@@ -1,0 +1,14 @@
+{
+  "url": "batch",
+  "resource_methods": ["GET", "POST"],
+  "schema": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "farm": {
+      "type": "string",
+      "required": true
+    }
+  }
+}
