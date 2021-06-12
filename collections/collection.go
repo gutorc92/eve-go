@@ -28,7 +28,12 @@ func typeOf(typeof string) reflect.Type {
 	switch typeof {
 	case "string":
 		return reflect.TypeOf("")
+	case "integer":
+		return reflect.TypeOf(0)
+	case "boolean":
+		return reflect.TypeOf(true)
 	}
+
 	return reflect.TypeOf("")
 }
 
@@ -58,22 +63,17 @@ func (s *Schema) CreateStruct(list bool) (reflect.Type, error) {
 
 func (s *Schema) UnmarshalJSON(b []byte) error {
 	s.Fields = make(map[string]Field)
-	fmt.Println("unmarshal", string(b))
 	var converted map[string]json.RawMessage
 	err := json.Unmarshal(b, &converted)
 	if err != nil {
-		fmt.Println("Error on unmarshall", err)
 		return err
 	}
 	for key, f := range converted {
-		fmt.Println("key", key, string(f))
 		var field Field
 		err := json.Unmarshal(f, &field)
 		if err != nil {
-			fmt.Println("Error on unmarshall", err)
 			return err
 		}
-		fmt.Println("field", field)
 		s.Fields[key] = field
 	}
 	return nil

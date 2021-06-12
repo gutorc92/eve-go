@@ -66,6 +66,21 @@ func NewRequestParameters(values url.Values) RequestParameters {
 	return req
 }
 
+func (req *RequestParameters) WhereClause() interface{} {
+	fmt.Println("where", req.Where)
+	var doc interface{}
+	if req.Where != "" {
+		err := bson.UnmarshalExtJSON([]byte(req.Where), true, &doc)
+		if err != nil {
+			fmt.Println(err)
+		}
+	} else {
+		doc = bson.M{}
+	}
+	fmt.Println("where compiled", doc)
+	return doc
+}
+
 func (req *RequestParameters) RequestParameters2MongOptions() *options.FindOptions {
 	findOptions := options.FindOptions{}
 	m := int64(req.MaxResults)
@@ -83,17 +98,7 @@ func GETHandler(dt *dao.DataMongo, domain collections.Domain) http.Handler {
 		}
 		// v := reflect.New(typ).Elem()
 		req := NewRequestParameters(r.URL.Query())
-		fmt.Println("where", req.Where)
-		var doc interface{}
-		if req.Where != "" {
-			err = bson.UnmarshalExtJSON([]byte(req.Where), true, &doc)
-			if err != nil {
-				fmt.Println(err)
-			}
-		} else {
-			doc = bson.M{}
-		}
-		fmt.Println("where compiled", doc)
+		doc := req.WhereClause()
 		fmt.Println("Collection name:", domain.GetCollectionName(), req.MaxResults)
 		slice := reflect.MakeSlice(reflect.SliceOf(typ), 5, req.MaxResults)
 		x := reflect.New(slice.Type())
