@@ -1,12 +1,15 @@
 package handlers
 
 import (
+	"crypto/sha1"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
 	"reflect"
 	"strconv"
+	"time"
 
 	"github.com/gutorc92/eve-go/collections"
 	"github.com/gutorc92/eve-go/config"
@@ -129,12 +132,37 @@ func POSTHandler(dt *dao.DataMongo, collectionName string, schema collections.Sc
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		_, err = dt.Insert(collectionName, x.Interface())
+		hasher := sha1.New()
+		fields := reflect.Indirect(x).Field(0).String()
+		// TODO: add all fields to etag creation
+		hasher.Write([]byte(fields))
+		sha := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+		reflect.Indirect(x).FieldByName("Etag").SetString(sha)
+		// TODO: set real datetime
+		reflect.Indirect(x).FieldByName("CreatedAt").SetInt(time.Now().Unix())
+		reflect.Indirect(x).FieldByName("UpdateAt").SetInt(time.Now().Unix())
+		fmt.Println("struct to insert", x)
+		id, err := dt.Insert(collectionName, x.Interface())
 		if err != nil {
 			fmt.Println("Error to error")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
+		structFieldValue := reflect.Indirect(x).FieldByName("ID")
+		if !structFieldValue.CanSet() {
+			fmt.Errorf("Cannot set %s field value")
+		}
+
+		if !structFieldValue.IsValid() {
+			fmt.Errorf("No such field: in obj")
+		}
+
+		structFieldType := structFieldValue.Type()
+		val := reflect.ValueOf(id)
+		if structFieldType != val.Type() {
+			fmt.Errorf("Provided value %v type %v didn't match obj field type %v", val, val.Type(), structFieldType)
+		}
+		structFieldValue.Set(val)
 		fmt.Println("x", x)
 		WriteJSONResponse(x.Interface(), 200, w)
 	})
