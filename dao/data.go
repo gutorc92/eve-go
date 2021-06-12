@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -54,11 +53,12 @@ func (dt *DataMongo) Insert(collectionName string, save interface{}) (primitive.
 	return id, nil
 }
 
-func (dt *DataMongo) FindAll(collectionName string, data interface{}, findOptions *options.FindOptions) error {
+func (dt *DataMongo) FindAll(collectionName string, search interface{}, data interface{}, findOptions *options.FindOptions) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+	fmt.Println("Database", dt.Database)
 	collection := dt.Client.Database(dt.Database).Collection(collectionName)
-	cursor, err := collection.Find(ctx, bson.D{}, findOptions)
+	cursor, err := collection.Find(ctx, search, findOptions)
 	if err != nil {
 		return err
 	}

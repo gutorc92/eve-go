@@ -1,0 +1,41 @@
+{
+  "url": "module",
+  "resource_methods": ["GET", "POST"],
+  "schema": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "string",
+      "required": true
+    },
+    "index": {
+      "type": "integer"
+    },
+    "place": {
+      "type": "string", 
+      "required": true
+    },
+    "icon": {
+      "type": "string", 
+      "default": ""
+    },
+    "link": {
+      "type": "string", 
+      "default": ""
+    },
+    "description": {
+      "type": "string", 
+      "default": ""
+    },
+    "admin": {
+      "type": "boolean", 
+      "default": false
+    },
+    "locked": {
+      "type": "boolean", 
+      "default": false
+    }
+  }
+}
