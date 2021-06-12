@@ -73,9 +73,9 @@ func (req *RequestParameters) RequestParameters2MongOptions() *options.FindOptio
 	return &findOptions
 }
 
-func GETHandler(dt *dao.DataMongo, collectionName string, schema collections.Schema) http.Handler {
+func GETHandler(dt *dao.DataMongo, domain collections.Domain) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		typ, err := schema.CreateStruct(true)
+		typ, err := domain.Schema.CreateStruct(true)
 		if err != nil {
 			fmt.Println("Error to create struct", err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -84,11 +84,21 @@ func GETHandler(dt *dao.DataMongo, collectionName string, schema collections.Sch
 		// v := reflect.New(typ).Elem()
 		req := NewRequestParameters(r.URL.Query())
 		fmt.Println("where", req.Where)
-		fmt.Println("Collection name:", collectionName, req.MaxResults)
+		var doc interface{}
+		if req.Where != "" {
+			err = bson.UnmarshalExtJSON([]byte(req.Where), true, &doc)
+			if err != nil {
+				fmt.Println(err)
+			}
+		} else {
+			doc = bson.M{}
+		}
+		fmt.Println("where compiled", doc)
+		fmt.Println("Collection name:", domain.GetCollectionName(), req.MaxResults)
 		slice := reflect.MakeSlice(reflect.SliceOf(typ), 5, req.MaxResults)
 		x := reflect.New(slice.Type())
 		x.Elem().Set(slice)
-		err = dt.FindAll(collectionName, bson.M{"name": "Sitio Abrace"}, x.Interface(), req.RequestParameters2MongOptions())
+		err = dt.FindAll(domain.GetCollectionName(), doc, x.Interface(), req.RequestParameters2MongOptions())
 		if err != nil {
 			fmt.Println("Error to find all", err)
 			w.WriteHeader(http.StatusBadRequest)
