@@ -29,7 +29,7 @@ func typeOf(typeof string) reflect.Type {
 	case "string":
 		return reflect.TypeOf("")
 	case "integer":
-		return reflect.TypeOf(0)
+		return reflect.TypeOf(float64(0))
 	case "boolean":
 		return reflect.TypeOf(true)
 	}
@@ -55,6 +55,21 @@ func (s *Schema) CreateStruct(list bool) (reflect.Type, error) {
 			Name: "ID",
 			Type: reflect.TypeOf(primitive.ObjectID{}),
 			Tag:  `bson:"_id,omitempty" json:"_id"`,
+		})
+		fields = append(fields, reflect.StructField{
+			Name: "CreatedAt",
+			Type: reflect.TypeOf(primitive.DateTime(0)),
+			Tag:  `bson:"_created,omitempty" json:"_created"`,
+		})
+		fields = append(fields, reflect.StructField{
+			Name: "UpdateAt",
+			Type: reflect.TypeOf(primitive.DateTime(0)),
+			Tag:  `bson:"_updated,omitempty" json:"_updated"`,
+		})
+		fields = append(fields, reflect.StructField{
+			Name: "Etag",
+			Type: reflect.TypeOf(""),
+			Tag:  `bson:"_etag,omitempty" json:"_etag"`,
 		})
 	}
 	typ := reflect.StructOf(fields)
