@@ -1,11 +1,10 @@
 package cmd
 
 import (
+	"github.com/gutorc92/eve-go/config"
+	"github.com/gutorc92/eve-go/handlers"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/gutorc92/api-farm/config"
-	"github.com/gutorc92/api-farm/handlers"
-
 )
 
 // serveCmd represents the serve command

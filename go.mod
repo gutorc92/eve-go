@@ -1,4 +1,4 @@
-module github.com/gutorc92/api-farm
+module github.com/gutorc92/eve-go
 
 go 1.14
 

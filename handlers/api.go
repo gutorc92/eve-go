@@ -8,9 +8,9 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/gutorc92/api-farm/collections"
-	"github.com/gutorc92/api-farm/config"
-	"github.com/gutorc92/api-farm/dao"
+	"github.com/gutorc92/eve-go/collections"
+	"github.com/gutorc92/eve-go/config"
+	"github.com/gutorc92/eve-go/dao"
 	"github.com/prometheus/common/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"

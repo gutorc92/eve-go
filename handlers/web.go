@@ -14,9 +14,9 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/gutorc92/api-farm/collections"
-	"github.com/gutorc92/api-farm/config"
-	"github.com/gutorc92/api-farm/dao"
+	"github.com/gutorc92/eve-go/collections"
+	"github.com/gutorc92/eve-go/config"
+	"github.com/gutorc92/eve-go/dao"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 

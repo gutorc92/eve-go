@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/gutorc92/api-farm/metrics"
+	"github.com/gutorc92/eve-go/metrics"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
