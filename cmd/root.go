@@ -14,8 +14,8 @@ var log = logrus.New()
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "api-farm",
-	Short: "Api Farm",
+	Use:   "eve-go",
+	Short: "Eve go",
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -33,7 +33,7 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	viper.SetEnvPrefix("API_FARM") // all environment variables must be prefixed with API_FARM
+	viper.SetEnvPrefix("EVE_GO") // all environment variables must be prefixed with EVE_GO
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_", ".", "_"))
 	viper.AutomaticEnv() // read in environment variables that match
 }

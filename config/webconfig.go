@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -49,7 +48,6 @@ func IsFile(path string) (bool, error) {
 		return false, nil
 	}
 	ext := filepath.Ext(path)
-	fmt.Println("ext", ext)
 	if ext == ".json" {
 		return true, nil
 	}
@@ -74,11 +72,13 @@ func ListFiles(root string) ([]string, error) {
 // Init initializes the web config with properties retrieved from Viper.
 func (c *WebConfig) Init(v *viper.Viper) *WebConfig {
 	c.Metrics = metrics.New()
-	if v.GetString(database) != "" {
-		c.Database = v.GetString(database)
-	}
 	if v.GetString(uri) != "" {
 		c.Uri = v.GetString(uri)
+	} else {
+		panic("A uri must be set")
+	}
+	if v.GetString(database) != "" {
+		c.Database = v.GetString(database)
 	}
 	if v.GetString(files) != "" {
 		argumentFiles := v.GetString(files)

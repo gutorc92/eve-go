@@ -14,6 +14,7 @@ import (
 	"github.com/gutorc92/eve-go/collections"
 	"github.com/gutorc92/eve-go/config"
 	"github.com/gutorc92/eve-go/dao"
+	"github.com/gutorc92/eve-go/metrics"
 	"github.com/prometheus/common/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -91,8 +92,9 @@ func (req *RequestParameters) RequestParameters2MongOptions() *options.FindOptio
 	return &findOptions
 }
 
-func GETHandler(dt *dao.DataMongo, domain collections.Domain) http.Handler {
+func GETHandler(dt *dao.DataMongo, metrics *metrics.Metrics, domain collections.Domain) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
 		typ, err := domain.Schema.CreateStruct(true)
 		if err != nil {
 			fmt.Println("Error to create struct", err)
@@ -113,6 +115,7 @@ func GETHandler(dt *dao.DataMongo, domain collections.Domain) http.Handler {
 			return
 		}
 		fmt.Println("x", x)
+		metrics.CountApiCall("http", "200", "false", "", "GET", domain.GetUrl(), time.Since(start).Seconds())
 		WriteJSONResponse(x.Interface(), 200, w)
 	})
 }

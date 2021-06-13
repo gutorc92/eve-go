@@ -1,5 +1,5 @@
-PROJECT_NAME := "api-token"
-PKG := "gitlab.com/grcprojetos/contabilidade/$(PROJECT_NAME)"
+PROJECT_NAME := "eve-go"
+PKG := "github.com/gutorc92/$(PROJECT_NAME)"
 PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/)
 GO_FILES := $(shell find . -name '*.go' | grep -v /vendor/ | grep -v _test.go)
 
