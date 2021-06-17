@@ -104,7 +104,7 @@ func GETHandler(dt *dao.DataMongo, metrics *metrics.Metrics, domain collections.
 		// v := reflect.New(typ).Elem()
 		req := NewRequestParameters(r.URL.Query())
 		doc := req.WhereClause()
-		fmt.Println("Collection name:", domain.GetCollectionName(), req.MaxResults)
+		// fmt.Println("Collection name:", domain.GetCollectionName(), req.MaxResults)
 		slice := reflect.MakeSlice(reflect.SliceOf(typ), 5, req.MaxResults)
 		x := reflect.New(slice.Type())
 		x.Elem().Set(slice)
@@ -114,9 +114,21 @@ func GETHandler(dt *dao.DataMongo, metrics *metrics.Metrics, domain collections.
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		fmt.Println("x", x)
 		metrics.CountApiCall("http", "200", "false", "", "GET", domain.GetUrl(), time.Since(start).Seconds())
 		WriteJSONResponse(x.Interface(), 200, w)
+	})
+}
+
+func OPTIONSHandler(dt *dao.DataMongo, metrics *metrics.Metrics, domain collections.Domain) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+		w.Header().Set("Content-Type", "application/json")
+		metrics.CountApiCall("http", "200", "false", "", "OPTIONS", domain.GetUrl(), time.Since(start).Seconds())
+		w.WriteHeader(http.StatusOK)
+		return
 	})
 }
 
@@ -172,6 +184,9 @@ func POSTHandler(dt *dao.DataMongo, collectionName string, schema collections.Sc
 }
 
 func WriteJSONResponse(payload interface{}, status int, w http.ResponseWriter) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	meta := newMeta()

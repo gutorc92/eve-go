@@ -1,6 +1,6 @@
 {
   "url": "module",
-  "resource_methods": ["GET", "POST"],
+  "resource_methods": ["GET", "POST", "OPTIONS", "PUT"],
   "schema": {
     "name": {
       "type": "string",

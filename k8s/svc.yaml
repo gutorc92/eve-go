@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: api-farm
+  name: eve-go
   labels:
-    app: api-farm
+    app: eve-go
     service: api
 spec:
   ports:
@@ -11,5 +11,5 @@ spec:
     name: http
     targetPort: 5000
   selector:
-    app: api-farm
+    app: eve-go
 ---

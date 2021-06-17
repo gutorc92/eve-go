@@ -87,6 +87,9 @@ func (s *Server) Serve() error {
 			if method == "GET" {
 				v1Router.Path(api.GetUrlItem()).Handler(GETHandler(s.dt, s.WebConfig.Metrics, api)).Methods("GET")
 				v1Router.Handle(api.GetUrl(), GETHandler(s.dt, s.WebConfig.Metrics, api)).Methods("GET")
+			} else if method == "OPTIONS" {
+				fmt.Println("Passou aqui no add options")
+				v1Router.Handle(api.GetUrl(), OPTIONSHandler(s.dt, s.WebConfig.Metrics, api)).Methods("OPTIONS")
 			} else if method == "POST" {
 				v1Router.Handle(api.GetUrl(), POSTHandler(s.dt, api.GetCollectionName(), api.Schema)).Methods("POST")
 			}

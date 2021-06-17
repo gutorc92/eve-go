@@ -1,28 +1,45 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: api-farm
+  name: eve-go
   labels:
-    app: api-farm
+    app: eve-go
     version: v1
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: api-farm
+      app: eve-go
       version: v1
   template:
     metadata:
       labels:
-        app: api-farm
+        app: eve-go
         version: v1
     spec:
       containers:
-      - name: api-farm
-        image: gutorc92/api-farm
+      - name: eve-go
+        image: gutorc92/eve-go:v0.0.1
         imagePullPolicy: Always
+        env:
+        - name: EVE_GO_URI
+          value: 
+        - name: EVE_GO_DATABASE
+          value: eduqc
+        - name: EVE_GO_FILES
+          value: "/usr/json/"
         ports:
         - containerPort: 5000
-      imagePullSecrets:
-      - name: gitlab
+        volumeMounts:
+        - name: config-volume
+          mountPath: /usr/json/
+      volumes:
+      - name: config-volume
+        configMap:
+          # Provide the name of the ConfigMap containing the files you want
+          # to add to the container
+          name: module-configmap
+          # items:
+          # - key: module.json
+          #   path: module.json
 ---

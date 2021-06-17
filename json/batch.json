@@ -1,6 +1,6 @@
 {
   "url": "batch",
-  "resource_methods": ["GET", "POST"],
+  "resource_methods": ["GET"],
   "schema": {
     "name": {
       "type": "string",
