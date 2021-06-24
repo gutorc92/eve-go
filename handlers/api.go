@@ -92,6 +92,28 @@ func (req *RequestParameters) RequestParameters2MongOptions() *options.FindOptio
 	return &findOptions
 }
 
+func getItems(dt *dao.DataMongo, domain collections.Domain) (interface{}, error) {
+	typ, err := domain.Schema.CreateStruct(true)
+	if err != nil {
+		fmt.Println("Error to create struct", err)
+		return nil, err
+	}
+	// v := reflect.New(typ).Elem()
+	// req := NewRequestParameters()
+	req := RequestParameters{50, ""}
+	doc := bson.M{}
+	// fmt.Println("Collection name:", domain.GetCollectionName(), req.MaxResults)
+	slice := reflect.MakeSlice(reflect.SliceOf(typ), 5, req.MaxResults)
+	x := reflect.New(slice.Type())
+	x.Elem().Set(slice)
+	err = dt.FindAll(domain.GetCollectionName(), doc, x.Interface(), req.RequestParameters2MongOptions())
+	if err != nil {
+		fmt.Println("Error to find all", err)
+		return nil, err
+	}
+	return x.Interface(), nil
+}
+
 func GETHandler(dt *dao.DataMongo, metrics *metrics.Metrics, domain collections.Domain) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()

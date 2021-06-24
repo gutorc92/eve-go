@@ -13,6 +13,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/gorilla/mux"
 	"github.com/gutorc92/eve-go/collections"
 	"github.com/gutorc92/eve-go/config"
@@ -68,6 +69,33 @@ func (s *Server) InitFromWebConfig(wc *config.WebConfig) *Server {
 		s.Apis = append(s.Apis, domain)
 	}
 	return s
+}
+
+func (s *Server) HandleAsLambda(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	if len(s.Apis) > 1 {
+		panic("labda functions just handle one api")
+	}
+	switch req.HTTPMethod {
+	case "GET":
+		items, err := getItems(s.dt, s.Apis[0])
+		if err != nil {
+			return events.APIGatewayProxyResponse{Body: req.Body, StatusCode: 400}, err
+		}
+		res2B, err := json.Marshal(items)
+		if err != nil {
+			return events.APIGatewayProxyResponse{Body: req.Body, StatusCode: 400}, err
+		}
+		return events.APIGatewayProxyResponse{Body: string(res2B), StatusCode: 200}, nil
+		// case "POST":
+		// 	return handlers.CreateUser(req, tableName, dynaClient)
+		// case "PUT":
+		// 	return handlers.UpdateUser(req, tableName, dynaClient)
+		// case "DELETE":
+		// 	return handlers.DeleteUser(req, tableName, dynaClient)
+		// default:
+		// 	return handlers.UnhandledMethod()
+	}
+	return events.APIGatewayProxyResponse{Body: req.Body, StatusCode: 200}, nil
 }
 
 func (s *Server) Serve() error {
