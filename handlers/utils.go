@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"strconv"
 
+	"github.com/prometheus/common/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -201,25 +202,38 @@ func newMeta() *MetaPage {
 type RequestParameters struct {
 	MaxResults int
 	Where      string
+	Page       int
 }
 
 func NewRequestParameters(values url.Values) RequestParameters {
-	req := RequestParameters{0, ""}
+	req := RequestParameters{}
 	max_results := values.Get(QUERY_MAX_RESULTS)
 	if max_results != "" {
 		i, err := strconv.Atoi(max_results)
 		if err != nil {
-			fmt.Println("Cannot convert max_values to int")
-			req.MaxResults = 50
+			log.Debug("Cannot convert %s to int", QUERY_MAX_RESULTS)
+			req.MaxResults = PAGINATION_DEFAULT
 		} else {
 			req.MaxResults = i
 		}
 	} else {
-		req.MaxResults = 50
+		req.MaxResults = PAGINATION_DEFAULT
 	}
 	where := values.Get(QUERY_WHERE)
 	if where != "" {
 		req.Where = where
+	}
+	page := values.Get(QUERY_PAGE)
+	if page != "" {
+		i, err := strconv.Atoi(page)
+		if err != nil {
+			log.Debug("Cannot convert %s to int", QUERY_PAGE)
+			req.Page = 1
+		} else {
+			req.Page = i
+		}
+	} else {
+		req.Page = 1
 	}
 	return req
 }
