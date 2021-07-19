@@ -109,6 +109,10 @@ func (d *Domain) GetUrl() string {
 	return fmt.Sprintf("/%s", d.URL)
 }
 
+func (d *Domain) GetUrlSelfItem(id string) string {
+	return fmt.Sprintf("/%s/%s", d.URL, id)
+}
+
 func (d *Domain) GetUrlItem() string {
 	return fmt.Sprintf("/%s/{id:[0-9]+}", d.URL)
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/gutorc92/eve-go/collections"
 	"github.com/gutorc92/eve-go/dao"
 	log "github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func GetItems(dt *dao.DataMongo, domain collections.Domain, req *RequestParameters) (reflect.Value, error) {
@@ -49,15 +50,16 @@ func SaveItem(dt *dao.DataMongo, domain collections.Domain, body io.ReadCloser) 
 		log.Debug("Cannot unmarshal json: %s", err)
 		return reflect.Value{}, err
 	}
+	// TODO: set real datetime
+	date := primitive.NewDateTimeFromTime(time.Now())
+	reflect.Indirect(x).FieldByName("CreatedAt").Set(reflect.ValueOf(date))
+	reflect.Indirect(x).FieldByName("UpdateAt").Set(reflect.ValueOf(date))
 	hasher := sha1.New()
 	fields := reflect.Indirect(x).Field(0).String()
 	// TODO: add all fields to etag creation
 	hasher.Write([]byte(fields))
 	sha := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 	reflect.Indirect(x).FieldByName("Etag").SetString(sha)
-	// TODO: set real datetime
-	reflect.Indirect(x).FieldByName("CreatedAt").SetInt(time.Now().Unix())
-	reflect.Indirect(x).FieldByName("UpdateAt").SetInt(time.Now().Unix())
 	fmt.Println("struct to insert", x)
 	id, err := dt.Insert(domain.GetCollectionName(), x.Interface())
 	if err != nil {

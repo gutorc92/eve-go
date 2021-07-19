@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"time"
 
 	"github.com/gutorc92/eve-go/collections"
 	"github.com/gutorc92/eve-go/config"
@@ -26,7 +27,10 @@ func GETHandler(dt *dao.DataMongo, domain collections.Domain) http.Handler {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		WriteJSONResponse(result, 200, w)
+		meta := newMeta()
+		meta.Total = reflect.Indirect(result).Len()
+		page := ResultPage{Items: result.Interface(), Meta: meta}
+		WriteJSONResponse(LIST_RESPONSE, page, 200, w)
 	})
 }
 
@@ -44,18 +48,34 @@ func POSTHandler(dt *dao.DataMongo, domain collections.Domain) http.Handler {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		WriteJSONResponse(x, 200, w)
+		page := CreatePage{}
+		etag := reflect.Indirect(x).FieldByName("Etag").String()
+		id := reflect.Indirect(x).FieldByName("ID")
+		created := reflect.Indirect(x).FieldByName("CreatedAt")
+		updated := reflect.Indirect(x).FieldByName("UpdateAt")
+		createdTime := created.Addr().MethodByName("Time").Call([]reflect.Value{})[0]
+		updateTime := updated.Addr().MethodByName("Time").Call([]reflect.Value{})[0]
+		createdString := createdTime.Interface().(time.Time)
+		updateString := updateTime.Interface().(time.Time)
+		fmt.Println("Time formated", createdString.Format(time.RFC1123))
+		idString := id.Addr().MethodByName("Hex").Call([]reflect.Value{})[0].String()
+		links := SelfResult{Title: domain.GetUrl(), Href: domain.GetUrlSelfItem(idString)}
+		page.Links = LinksResult{Self: links}
+		page.Etag = etag
+		page.Status = STATUS_OK
+		page.ID = idString
+		page.Created = createdString.Format(time.RFC1123)
+		page.Updated = updateString.Format(time.RFC1123)
+		WriteJSONResponse(CREATE_RESPONSE, page, 200, w)
 	})
 }
 
-func WriteJSONResponse(payload reflect.Value, status int, w http.ResponseWriter) {
+func WriteJSONResponse(type_response int, page interface{}, status int, w http.ResponseWriter) {
 	w.WriteHeader(status)
-	meta := newMeta()
-	meta.Total = reflect.Indirect(payload).Len()
-	result := ResultPage{Items: payload.Interface(), Meta: meta}
 	jEncoder := json.NewEncoder(w)
+	var err error
+	err = jEncoder.Encode(page)
 	jEncoder.SetEscapeHTML(false)
-	err := jEncoder.Encode(result)
 	if err != nil {
 		fmt.Println("Error")
 	}

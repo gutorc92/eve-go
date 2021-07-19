@@ -13,6 +13,9 @@ import (
 var (
 	DATE_FORMAT = "%a, %d %b %Y %H:%M:%S GMT"
 
+	CREATE_RESPONSE = 1
+	LIST_RESPONSE   = 2
+
 	STATUS_OK               = "OK"
 	STATUS_ERR              = "ERR"
 	LAST_UPDATED            = "_updated"
@@ -184,6 +187,22 @@ var (
 type ResultPage struct {
 	Items interface{} `json:"_items"`
 	Meta  *MetaPage   `json:"_meta"`
+}
+
+type SelfResult struct {
+	Title string `json:"title"`
+	Href  string `json:"href"`
+}
+type LinksResult struct {
+	Self SelfResult
+}
+type CreatePage struct {
+	Created string      `json:"_created"`
+	Updated string      `json:"_updated"`
+	Etag    string      `json:"_etag"`
+	ID      string      `json:"_id"`
+	Links   LinksResult `json:"_links"`
+	Status  string      `json:"_status"`
 }
 
 type MetaPage struct {
