@@ -85,13 +85,12 @@ func (s *Server) Serve() error {
 	for _, api := range s.Apis {
 		for _, method := range api.ResourceMethods {
 			if method == "GET" {
-				v1Router.Path(api.GetUrlItem()).Handler(GETHandler(s.dt, s.WebConfig.Metrics, api)).Methods("GET")
-				v1Router.Handle(api.GetUrl(), GETHandler(s.dt, s.WebConfig.Metrics, api)).Methods("GET")
+				v1Router.Path(api.GetUrlItem()).Handler(MetricsMiddleware(GETHandler(s.dt, api), s.WebConfig.Metrics, api.GetUrlItem())).Methods("GET")
+				v1Router.Handle(api.GetUrl(), HeadersMiddleware(MetricsMiddleware(GETHandler(s.dt, api), s.WebConfig.Metrics, api.GetUrl()))).Methods("GET")
 			} else if method == "OPTIONS" {
-				fmt.Println("Passou aqui no add options")
-				v1Router.Handle(api.GetUrl(), OPTIONSHandler(s.dt, s.WebConfig.Metrics, api)).Methods("OPTIONS")
+				v1Router.Handle(api.GetUrl(), HeadersMiddleware(MetricsMiddleware(OPTIONSHandler(s.dt, api), s.WebConfig.Metrics, api.GetUrl()))).Methods("OPTIONS")
 			} else if method == "POST" {
-				v1Router.Handle(api.GetUrl(), POSTHandler(s.dt, api.GetCollectionName(), api.Schema)).Methods("POST")
+				v1Router.Handle(api.GetUrl(), HeadersMiddleware(MetricsMiddleware(POSTHandler(s.dt, api), s.WebConfig.Metrics, api.GetUrl()))).Methods("POST")
 			}
 		}
 		// v1Router.Handle(api.GetUrl(), api.GETHandler()).Methods("GET")

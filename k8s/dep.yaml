@@ -30,6 +30,7 @@ spec:
           value: "/usr/json/"
         ports:
         - containerPort: 5000
+          name: http
         volumeMounts:
         - name: config-volume
           mountPath: /usr/json/
