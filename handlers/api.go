@@ -30,7 +30,7 @@ func GETHandler(dt *dao.DataMongo, domain collections.Domain) http.Handler {
 		meta := newMeta()
 		meta.Total = reflect.Indirect(result).Len()
 		page := ResultPage{Items: result.Interface(), Meta: meta}
-		WriteJSONResponse(LIST_RESPONSE, page, 200, w)
+		WriteJSONResponse(page, 200, w)
 	})
 }
 
@@ -66,11 +66,11 @@ func POSTHandler(dt *dao.DataMongo, domain collections.Domain) http.Handler {
 		page.ID = idString
 		page.Created = createdString.Format(time.RFC1123)
 		page.Updated = updateString.Format(time.RFC1123)
-		WriteJSONResponse(CREATE_RESPONSE, page, 200, w)
+		WriteJSONResponse(page, 200, w)
 	})
 }
 
-func WriteJSONResponse(type_response int, page interface{}, status int, w http.ResponseWriter) {
+func WriteJSONResponse(page interface{}, status int, w http.ResponseWriter) {
 	w.WriteHeader(status)
 	jEncoder := json.NewEncoder(w)
 	var err error
