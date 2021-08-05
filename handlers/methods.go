@@ -15,6 +15,25 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+func GetItem(dt *dao.DataMongo, domain collections.Domain, req *RequestParameters) (reflect.Value, error) {
+	typ, err := domain.Schema.CreateStruct(true)
+	if err != nil {
+		fmt.Println("Error to create struct", err)
+		return reflect.Value{}, err
+	}
+	// v := reflect.New(typ).Elem()
+	// req := NewRequestParameters(r.URL.Query())
+	doc := req.WhereClause()
+	// fmt.Println("Collection name:", domain.GetCollectionName(), req.MaxResults)
+	x := reflect.New(typ)
+	err = dt.FindOne(domain.GetCollectionName(), doc, x.Interface())
+	if err != nil {
+		log.Error("Error to find all", err)
+		return reflect.Value{}, err
+	}
+	return x, nil
+}
+
 func GetItems(dt *dao.DataMongo, domain collections.Domain, req *RequestParameters) (reflect.Value, error) {
 	typ, err := domain.Schema.CreateStruct(true)
 	if err != nil {

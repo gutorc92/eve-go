@@ -98,11 +98,24 @@ type Datasource struct {
 	Source string `json:"source,omitempty"`
 }
 
+type AdditionalLookup struct {
+	Url   string `json:"url,omitempty"`
+	Field string `json:"field,omitempty"`
+}
+
+func (a *AdditionalLookup) isEmpty() bool {
+	if a.Url == "" && a.Field == "" {
+		return true
+	}
+	return false
+}
+
 type Domain struct {
-	URL             string     `json:"url,omitempty"`
-	Schema          Schema     `json:"schema,omitempty"`
-	ResourceMethods []string   `json:"resource_methods,omitempty"`
-	Datasource      Datasource `json:"datasource,omitempty"`
+	URL              string           `json:"url,omitempty"`
+	Schema           Schema           `json:"schema,omitempty"`
+	ResourceMethods  []string         `json:"resource_methods,omitempty"`
+	Datasource       Datasource       `json:"datasource,omitempty"`
+	AdditionalLookup AdditionalLookup `json:"additional_lookup,omitempty"`
 }
 
 func (d *Domain) GetUrl() string {
@@ -114,7 +127,10 @@ func (d *Domain) GetUrlSelfItem(id string) string {
 }
 
 func (d *Domain) GetUrlItem() string {
-	return fmt.Sprintf("/%s/{id:[0-9]+}", d.URL)
+	if d.AdditionalLookup.isEmpty() {
+		return fmt.Sprintf("/%s/{id:[0-9]+}", d.URL)
+	}
+	return fmt.Sprintf("/%s/{%s:%s}", d.URL, d.AdditionalLookup.Field, d.AdditionalLookup.Url)
 }
 
 func (d *Domain) GetCollectionName() string {

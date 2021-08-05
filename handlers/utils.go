@@ -222,10 +222,11 @@ type RequestParameters struct {
 	MaxResults int
 	Where      string
 	Page       int
+	Params     map[string]string
 }
 
-func NewRequestParameters(values url.Values) RequestParameters {
-	req := RequestParameters{}
+func NewRequestParameters(values url.Values, params map[string]string) RequestParameters {
+	req := RequestParameters{Params: params}
 	max_results := values.Get(QUERY_MAX_RESULTS)
 	if max_results != "" {
 		i, err := strconv.Atoi(max_results)
@@ -260,7 +261,9 @@ func NewRequestParameters(values url.Values) RequestParameters {
 func (req *RequestParameters) WhereClause() interface{} {
 	fmt.Println("where", req.Where)
 	var doc interface{}
-	if req.Where != "" {
+	if len(req.Params) > 0 {
+		return req.Params
+	} else if req.Where != "" {
 		err := bson.UnmarshalExtJSON([]byte(req.Where), true, &doc)
 		if err != nil {
 			fmt.Println(err)

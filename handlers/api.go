@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/gutorc92/eve-go/collections"
 	"github.com/gutorc92/eve-go/config"
 	"github.com/gutorc92/eve-go/dao"
@@ -19,9 +20,25 @@ type API interface {
 	POSTHandler() http.Handler
 }
 
+func GETItemHandler(dt *dao.DataMongo, domain collections.Domain) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		params := mux.Vars(r)
+		fmt.Println("params", params)
+		req := NewRequestParameters(r.URL.Query(), params)
+		result, err := GetItem(dt, domain, &req)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		WriteJSONResponse(result.Interface(), 200, w)
+	})
+}
+
 func GETHandler(dt *dao.DataMongo, domain collections.Domain) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		req := NewRequestParameters(r.URL.Query())
+		params := mux.Vars(r)
+		fmt.Println("params", params)
+		req := NewRequestParameters(r.URL.Query(), params)
 		result, err := GetItems(dt, domain, &req)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)

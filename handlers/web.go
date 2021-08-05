@@ -85,7 +85,7 @@ func (s *Server) Serve() error {
 	for _, api := range s.Apis {
 		for _, method := range api.ResourceMethods {
 			if method == "GET" {
-				v1Router.Path(api.GetUrlItem()).Handler(MetricsMiddleware(GETHandler(s.dt, api), s.WebConfig.Metrics, api.GetUrlItem())).Methods("GET")
+				v1Router.Path(api.GetUrlItem()).Handler(MetricsMiddleware(GETItemHandler(s.dt, api), s.WebConfig.Metrics, api.GetUrlItem())).Methods("GET")
 				v1Router.Handle(api.GetUrl(), HeadersMiddleware(MetricsMiddleware(GETHandler(s.dt, api), s.WebConfig.Metrics, api.GetUrl()))).Methods("GET")
 			} else if method == "OPTIONS" {
 				v1Router.Handle(api.GetUrl(), HeadersMiddleware(MetricsMiddleware(OPTIONSHandler(s.dt, api), s.WebConfig.Metrics, api.GetUrl()))).Methods("OPTIONS")
