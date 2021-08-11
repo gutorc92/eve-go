@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/gutorc92/eve-go/config"
 	"github.com/gutorc92/eve-go/handlers"
 	"github.com/spf13/cobra"
@@ -13,6 +15,7 @@ var serveCmd = &cobra.Command{
 	Short: "Starts the HTTP REST APIs server",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		wc := new(config.WebConfig).Init(viper.GetViper())
+		fmt.Println("uri", wc.Uri)
 		server := new(handlers.Server).InitFromWebConfig(wc)
 
 		err := server.Serve()

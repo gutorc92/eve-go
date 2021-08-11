@@ -9,6 +9,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+const (
+	DICT = "dict"
+	LIST = "list"
+)
+
 type Collection interface {
 	GetUrl() string
 	GetCollectionName() string
@@ -32,6 +37,12 @@ func typeOf(typeof string) reflect.Type {
 		return reflect.TypeOf(float64(0))
 	case "boolean":
 		return reflect.TypeOf(true)
+	case "list":
+		// var teste []string
+		t := reflect.SliceOf(reflect.TypeOf(""))
+		return t
+	case "dict":
+		return reflect.TypeOf(reflect.TypeOf(reflect.Struct))
 	}
 
 	return reflect.TypeOf("")

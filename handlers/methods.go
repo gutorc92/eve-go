@@ -24,8 +24,10 @@ func GetItem(dt *dao.DataMongo, domain collections.Domain, req *RequestParameter
 	// v := reflect.New(typ).Elem()
 	// req := NewRequestParameters(r.URL.Query())
 	doc := req.WhereClause()
+	fmt.Println("doc", doc)
 	// fmt.Println("Collection name:", domain.GetCollectionName(), req.MaxResults)
 	x := reflect.New(typ)
+	fmt.Println("x", x.Interface())
 	err = dt.FindOne(domain.GetCollectionName(), doc, x.Interface())
 	if err != nil {
 		log.Error("Error to find all", err)

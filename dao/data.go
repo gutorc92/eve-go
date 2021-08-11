@@ -71,8 +71,13 @@ func (dt *DataMongo) FindAll(collectionName string, search interface{}, data int
 func (dt *DataMongo) FindOne(collectionName string, search interface{}, data interface{}) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	fmt.Println("Database", dt.Database)
+	fmt.Println("Database", dt.Database, "collection", collectionName)
 	collection := dt.Client.Database(dt.Database).Collection(collectionName)
-	data = collection.FindOne(ctx, search, &options.FindOneOptions{})
+	fmt.Println("collection", collection)
+	err := collection.FindOne(ctx, search, &options.FindOneOptions{}).Decode(data)
+	if err != nil {
+		fmt.Printf("error on find one: %s\n", err)
+	}
+	fmt.Println("data", data)
 	return nil
 }
