@@ -23,6 +23,7 @@ type Field struct {
 	Type      string `json:"type"`
 	Required  bool   `json:"required,omitempty"`
 	MinLength int    `json:"min_length,omitempty"`
+	Schema    Schema `json:"schema,omitempty"`
 }
 
 type Schema struct {
@@ -39,8 +40,7 @@ func typeOf(typeof string) reflect.Type {
 		return reflect.TypeOf(true)
 	case "list":
 		// var teste []string
-		t := reflect.SliceOf(reflect.TypeOf(""))
-		return t
+		return reflect.SliceOf(reflect.TypeOf(""))
 	case "dict":
 		return reflect.TypeOf(reflect.TypeOf(reflect.Struct))
 	}
@@ -55,11 +55,23 @@ func createTag(name string) reflect.StructTag {
 func (s *Schema) CreateStruct(list bool) (reflect.Type, error) {
 	fields := make([]reflect.StructField, 0, len(s.Fields))
 	for key, field := range s.Fields {
-		fields = append(fields, reflect.StructField{
-			Name: strings.Title(key),
-			Type: typeOf(field.Type),
-			Tag:  createTag(key),
-		})
+		if field.Type == DICT {
+			typ, err := field.Schema.CreateStruct(false)
+			if err != nil {
+				return nil, err
+			}
+			fields = append(fields, reflect.StructField{
+				Name: strings.Title(key),
+				Type: typ,
+				Tag:  createTag(key),
+			})
+		} else {
+			fields = append(fields, reflect.StructField{
+				Name: strings.Title(key),
+				Type: typeOf(field.Type),
+				Tag:  createTag(key),
+			})
+		}
 	}
 	if list == true {
 		fields = append(fields, reflect.StructField{
